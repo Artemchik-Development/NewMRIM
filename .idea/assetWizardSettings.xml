@@ -79,7 +79,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="C:\Users\Windows Explorer\Downloads\newmrim.png" />
+                                                <entry key="imagePath" value="C:\Users\Windows Explorer\Downloads\gh.png" />
                                                 <entry key="scalingPercent" value="67" />
                                               </map>
                                             </option>
@@ -108,6 +108,11 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="previewDensity" value="hdpi" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -271,6 +276,11 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="previewDensity" value="hdpi" />
                                     </map>
                                   </option>
                                 </PersistentState>
