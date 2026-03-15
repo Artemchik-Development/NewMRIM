@@ -20,7 +20,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMrimClient(): MrimClient = MrimClient()
+    fun provideMrimClient(
+        @ApplicationContext context: Context
+    ): MrimClient = MrimClient(context)
 
     @Provides
     @Singleton

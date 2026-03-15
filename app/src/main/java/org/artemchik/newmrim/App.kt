@@ -16,8 +16,8 @@ class App : Application() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Messages"
-            val descriptionText = "New messages notifications"
+            val name = getString(R.string.notif_channel_messages)
+            val descriptionText = getString(R.string.notif_channel_messages_desc)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText

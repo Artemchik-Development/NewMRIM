@@ -11,12 +11,24 @@ enum class UserStatus(val value: UInt, val xstatusType: String) {
     OFFLINE(MrimConstants.STATUS_OFFLINE, "");
 
     companion object {
-        fun fromValue(value: UInt): UserStatus = when {
-            value == MrimConstants.STATUS_INVISIBLE -> INVISIBLE
-            value == MrimConstants.STATUS_AWAY -> AWAY
-            value == MrimConstants.STATUS_ONLINE -> ONLINE
-            value == MrimConstants.STATUS_XSTATUS -> DND
-            else -> OFFLINE
+        fun fromValue(value: UInt, xstatusType: String = ""): UserStatus {
+            // Сначала проверяем по типу Xstatus, если он есть
+            if (xstatusType.isNotEmpty()) {
+                entries.find { it.xstatusType.equals(xstatusType, ignoreCase = true) }?.let { return it }
+            }
+
+            // Иначе по числовому значению
+            return when (value) {
+                MrimConstants.STATUS_INVISIBLE -> INVISIBLE
+                MrimConstants.STATUS_AWAY -> AWAY
+                MrimConstants.STATUS_ONLINE -> ONLINE
+                MrimConstants.STATUS_XSTATUS -> DND
+                MrimConstants.STATUS_OFFLINE -> OFFLINE
+                else -> {
+                    if ((value and MrimConstants.STATUS_XSTATUS) != 0u) DND
+                    else ONLINE
+                }
+            }
         }
     }
 }

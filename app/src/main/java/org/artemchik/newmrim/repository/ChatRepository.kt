@@ -75,9 +75,18 @@ class ChatRepository @Inject constructor(
 
     private fun showNotification(msg: MessageInfo) {
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra("chat_email", msg.from)
         }
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            context, 
+            msg.from.hashCode(), 
+            intent, 
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val builder = NotificationCompat.Builder(context, App.CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

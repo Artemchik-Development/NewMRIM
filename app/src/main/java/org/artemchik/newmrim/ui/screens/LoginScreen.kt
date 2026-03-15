@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.artemchik.newmrim.R
 import org.artemchik.newmrim.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,14 +78,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit, viewModel: LoginViewModel = hiltView
                     }
 
                     Text(
-                        "NewMRIM",
+                        stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
-                        "Вход в Mail.Ru Агент",
+                        stringResource(R.string.login_title),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -95,8 +97,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit, viewModel: LoginViewModel = hiltView
                     OutlinedTextField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChanged,
-                        label = { Text("Email") },
-                        placeholder = { Text("user@mail.ru") },
+                        label = { Text(stringResource(R.string.email_label)) },
+                        placeholder = { Text(stringResource(R.string.email_placeholder)) },
                         leadingIcon = { Icon(Icons.Outlined.Email, null) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
@@ -115,14 +117,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit, viewModel: LoginViewModel = hiltView
                     OutlinedTextField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChanged,
-                        label = { Text("Пароль") },
+                        label = { Text(stringResource(R.string.password_label)) },
                         leadingIcon = { Icon(Icons.Outlined.Lock, null) },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     if (passwordVisible) Icons.Filled.VisibilityOff
                                     else Icons.Filled.Visibility,
-                                    "Показать/скрыть"
+                                    stringResource(R.string.password_visibility_desc)
                                 )
                             }
                         },
@@ -152,7 +154,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, viewModel: LoginViewModel = hiltView
                             enabled = !uiState.isLoading
                         )
                         Text(
-                            "Запомнить пароль",
+                            stringResource(R.string.remember_password),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 4.dp)
@@ -193,10 +195,10 @@ fun LoginScreen(onLoginSuccess: () -> Unit, viewModel: LoginViewModel = hiltView
                                         color = MaterialTheme.colorScheme.onPrimary,
                                         strokeWidth = 2.dp
                                     )
-                                    Text("Подключение...")
+                                    Text(stringResource(R.string.connecting))
                                 }
                             } else {
-                                Text("Войти", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.login_button), style = MaterialTheme.typography.titleMedium)
                             }
                         }
                     }
@@ -238,7 +240,7 @@ private fun ServerSettingsSection(
             ) {
                 Icon(Icons.Outlined.Settings, null, Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("Настройки сервера",
+                Text(stringResource(R.string.server_settings),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -268,10 +270,10 @@ private fun ServerSettingsSection(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text("Перенаправление", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.redirection), style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            if (useRedirector) "Порт 2042 → оптимальный сервер"
-                            else "Прямое подключение",
+                            if (useRedirector) stringResource(R.string.port_redirect_desc)
+                            else stringResource(R.string.direct_connection_desc),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -281,7 +283,7 @@ private fun ServerSettingsSection(
 
                 OutlinedTextField(
                     value = host, onValueChange = onHostChanged,
-                    label = { Text("Хост") }, placeholder = { Text("mrim.mail.ru") },
+                    label = { Text(stringResource(R.string.host_label)) }, placeholder = { Text(stringResource(R.string.host_placeholder)) },
                     leadingIcon = { Icon(Icons.Outlined.Dns, null, Modifier.size(20.dp)) },
                     singleLine = true, shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth(), enabled = enabled
@@ -289,8 +291,8 @@ private fun ServerSettingsSection(
 
                 OutlinedTextField(
                     value = port, onValueChange = onPortChanged,
-                    label = { Text(if (useRedirector) "Порт (перенаправляющий)" else "Порт (прямой)") },
-                    placeholder = { Text(if (useRedirector) "2042" else "2041") },
+                    label = { Text(if (useRedirector) stringResource(R.string.port_redirect_label) else stringResource(R.string.port_direct_label)) },
+                    placeholder = { Text(if (useRedirector) stringResource(R.string.port_redirect_placeholder) else stringResource(R.string.port_direct_placeholder)) },
                     leadingIcon = { Icon(Icons.Outlined.Tag, null, Modifier.size(20.dp)) },
                     singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth(), enabled = enabled
@@ -301,16 +303,16 @@ private fun ServerSettingsSection(
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
 
-                Text("Сервер аватарок", style = MaterialTheme.typography.labelMedium,
+                Text(stringResource(R.string.avatar_server_title), style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary)
 
                 OutlinedTextField(
                     value = avatarHost, onValueChange = onAvatarHostChanged,
-                    label = { Text("Хост аватарок") }, placeholder = { Text("obraz.foto.mail.ru") },
+                    label = { Text(stringResource(R.string.avatar_host_label)) }, placeholder = { Text(stringResource(R.string.avatar_host_placeholder)) },
                     leadingIcon = { Icon(Icons.Outlined.Image, null, Modifier.size(20.dp)) },
                     singleLine = true, shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth(), enabled = enabled,
-                    supportingText = { Text("их нет они пропали") }
+                    supportingText = { Text(stringResource(R.string.avatar_server_supporting_text)) }
                 )
 
                 OutlinedButton(
@@ -319,7 +321,7 @@ private fun ServerSettingsSection(
                 ) {
                     Icon(Icons.Outlined.RestartAlt, null, Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Сбросить по умолчанию")
+                    Text(stringResource(R.string.reset_defaults))
                 }
             }
         }

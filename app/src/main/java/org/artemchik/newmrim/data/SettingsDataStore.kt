@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import org.artemchik.newmrim.protocol.data.ServerConfig
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -15,7 +14,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class SettingsDataStore @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val context: Context
 ) {
     private object Keys {
         val HOST = stringPreferencesKey("server_host")
@@ -25,6 +24,8 @@ class SettingsDataStore @Inject constructor(
         val LAST_EMAIL = stringPreferencesKey("last_email")
         val SAVED_PASSWORD = stringPreferencesKey("saved_password")
         val REMEMBER_PASSWORD = booleanPreferencesKey("remember_password")
+        val AUTO_CONNECT = booleanPreferencesKey("auto_connect")
+        val DARK_MODE = stringPreferencesKey("dark_mode") // "system", "light", "dark"
     }
 
     val serverConfig: Flow<ServerConfig> = context.dataStore.data.map { prefs ->
@@ -48,6 +49,14 @@ class SettingsDataStore @Inject constructor(
         prefs[Keys.REMEMBER_PASSWORD] ?: false
     }
 
+    val autoConnect: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[Keys.AUTO_CONNECT] ?: true
+    }
+
+    val darkMode: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[Keys.DARK_MODE] ?: "system"
+    }
+
     suspend fun saveServerConfig(config: ServerConfig) {
         context.dataStore.edit { prefs ->
             prefs[Keys.HOST] = config.host
@@ -62,6 +71,18 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.LAST_EMAIL] = email
             prefs[Keys.REMEMBER_PASSWORD] = remember
             prefs[Keys.SAVED_PASSWORD] = if (remember) password else ""
+        }
+    }
+
+    suspend fun setAutoConnect(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.AUTO_CONNECT] = enabled
+        }
+    }
+
+    suspend fun setDarkMode(mode: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.DARK_MODE] = mode
         }
     }
 

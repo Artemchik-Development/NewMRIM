@@ -1,19 +1,24 @@
 package org.artemchik.newmrim.viewmodel
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import org.artemchik.newmrim.data.SettingsDataStore
 import org.artemchik.newmrim.protocol.MrimClient
 import org.artemchik.newmrim.protocol.data.ServerConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.artemchik.newmrim.R
 import javax.inject.Inject
 
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
+    val isChecking: Boolean = true, // Состояние первоначальной проверки
     val error: String? = null,
     val isLoggedIn: Boolean = false,
     val rememberPassword: Boolean = false,
@@ -27,59 +32,62 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val mrimClient: MrimClient,
-    private val settingsStore: SettingsDataStore
+    private val settingsStore: SettingsDataStore,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {
-        // Загружаем настройки сервера
-        viewModelScope.launch {
-            settingsStore.serverConfig.first().let { c ->
-                _uiState.update {
-                    it.copy(
-                        serverHost = c.host,
-                        serverPort = c.port.toString(),
-                        useRedirector = c.useRedirector,
-                        avatarHost = c.avatarHost
-                    )
-                }
-            }
-        }
-
-        // Загружаем email
-        viewModelScope.launch {
-            settingsStore.lastEmail.first().let { e ->
-                if (e.isNotEmpty()) _uiState.update { it.copy(email = e) }
-            }
-        }
-
-        // Загружаем сохранённый пароль
-        viewModelScope.launch {
-            val remember = settingsStore.rememberPassword.first()
-            val password = settingsStore.savedPassword.first()
-            _uiState.update {
-                it.copy(
-                    rememberPassword = remember,
-                    password = if (remember) password else ""
-                )
-            }
-        }
-
-
+        // 1. Слушаем состояние подключения
         viewModelScope.launch {
             mrimClient.connectionState.collect { state ->
+                Log.d("LoginViewModel", "Connection state: $state")
                 when (state) {
                     is MrimClient.ConnectionState.LoggedIn ->
-                        _uiState.update { it.copy(isLoading = false, isLoggedIn = true) }
+                        _uiState.update { it.copy(isLoading = false, isLoggedIn = true, isChecking = false) }
                     is MrimClient.ConnectionState.Error ->
-                        _uiState.update { it.copy(isLoading = false, error = state.message) }
+                        _uiState.update { it.copy(isLoading = false, error = state.message, isChecking = false) }
                     is MrimClient.ConnectionState.Connecting,
                     is MrimClient.ConnectionState.LoggingIn ->
                         _uiState.update { it.copy(isLoading = true, error = null) }
+                    is MrimClient.ConnectionState.Disconnected ->
+                        _uiState.update { it.copy(isLoading = false, isLoggedIn = false) }
                     else -> {}
                 }
+            }
+        }
+
+        // 2. Загружаем настройки и проверяем необходимость автовхода
+        viewModelScope.launch {
+            val configFlow = settingsStore.serverConfig.first()
+            val emailFlow = settingsStore.lastEmail.first()
+            val rememberFlow = settingsStore.rememberPassword.first()
+            val passwordFlow = settingsStore.savedPassword.first()
+            val autoConnectFlow = settingsStore.autoConnect.first()
+
+            _uiState.update {
+                it.copy(
+                    serverHost = configFlow.host,
+                    serverPort = configFlow.port.toString(),
+                    useRedirector = configFlow.useRedirector,
+                    avatarHost = configFlow.avatarHost,
+                    email = emailFlow,
+                    rememberPassword = rememberFlow,
+                    password = if (rememberFlow) passwordFlow else ""
+                )
+            }
+
+            // Если уже залогинены — просто убираем экран проверки
+            if (mrimClient.connectionState.value is MrimClient.ConnectionState.LoggedIn) {
+                _uiState.update { it.copy(isLoggedIn = true, isChecking = false) }
+            } else if (autoConnectFlow && rememberFlow && emailFlow.isNotBlank() && passwordFlow.isNotBlank()) {
+                // Пытаемся войти автоматически только если включено автоподключение
+                login()
+            } else {
+                // Нет данных для входа или автоподключение выключено — показываем форму
+                _uiState.update { it.copy(isChecking = false) }
             }
         }
     }
@@ -102,10 +110,26 @@ class LoginViewModel @Inject constructor(
 
     fun login() {
         val s = _uiState.value
-        if (s.email.isBlank() || s.password.isBlank()) { _uiState.update { it.copy(error = "Заполните логин и пароль") }; return }
+        
+        // Если уже в процессе — не мешаем
+        if (mrimClient.connectionState.value is MrimClient.ConnectionState.Connecting ||
+            mrimClient.connectionState.value is MrimClient.ConnectionState.LoggingIn) {
+            return
+        }
+
+        if (s.email.isBlank() || s.password.isBlank()) {
+            _uiState.update { it.copy(error = context.getString(R.string.error_fill_login_password), isChecking = false) }
+            return
+        }
         val port = s.serverPort.toIntOrNull()
-        if (port == null || port !in 1..65535) { _uiState.update { it.copy(error = "Некорректный порт (1-65535)") }; return }
-        if (s.serverHost.isBlank()) { _uiState.update { it.copy(error = "Укажите адрес сервера") }; return }
+        if (port == null || port !in 1..65535) {
+            _uiState.update { it.copy(error = context.getString(R.string.error_invalid_port), isChecking = false) }
+            return
+        }
+        if (s.serverHost.isBlank()) {
+            _uiState.update { it.copy(error = context.getString(R.string.error_empty_host), isChecking = false) }
+            return
+        }
 
         val config = ServerConfig(s.serverHost.trim(), port, s.useRedirector,
             s.avatarHost.trim().ifEmpty { ServerConfig.DEFAULT_AVATAR_HOST })

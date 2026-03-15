@@ -21,5 +21,5 @@ data class ContactInfo(
     val isPhone: Boolean get() = (flags and MrimConstants.CONTACT_FLAG_PHONE) != 0u
     val isIgnored: Boolean get() = (flags and MrimConstants.CONTACT_FLAG_IGNORE) != 0u
     val displayName: String get() = nickname.ifEmpty { email }
-    val userStatus: UserStatus get() = if (!authorized) UserStatus.OFFLINE else UserStatus.fromValue(status)
+    val userStatus: UserStatus get() = if (!authorized) UserStatus.OFFLINE else UserStatus.fromValue(status, xstatusValue)
 }

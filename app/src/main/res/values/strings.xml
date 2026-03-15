@@ -1,3 +1,80 @@
 <resources>
     <string name="app_name">NewMRIM</string>
+    <string name="login_title">Вход в Mail.Ru Агент</string>
+    <string name="email_label">Email</string>
+    <string name="email_placeholder">user@mail.ru</string>
+    <string name="password_label">Пароль</string>
+    <string name="password_visibility_desc">Показать/скрыть</string>
+    <string name="remember_password">Запомнить пароль</string>
+    <string name="server_settings">Настройки сервера</string>
+    <string name="connecting">Подключение…</string>
+    <string name="login_button">Войти</string>
+    <string name="redirection">Перенаправление</string>
+    <string name="port_redirect_desc">Порт 2042 → оптимальный сервер</string>
+    <string name="direct_connection_desc">Прямое подключение</string>
+    <string name="host_label">Хост</string>
+    <string name="host_placeholder">mrim.mail.ru</string>
+    <string name="port_redirect_label">Порт (перенаправляющий)</string>
+    <string name="port_direct_label">Порт (прямой)</string>
+    <string name="port_redirect_placeholder">2042</string>
+    <string name="port_direct_placeholder">2041</string>
+    <string name="avatar_server_title">Сервер аватарок</string>
+    <string name="avatar_host_label">Хост аватарок</string>
+    <string name="avatar_host_placeholder">obraz.foto.mail.ru</string>
+    <string name="avatar_server_supporting_text">их нет они пропали</string>
+    <string name="reset_defaults">Сбросить по умолчанию</string>
+
+    <string name="typing">печатает…</string>
+    <string name="status_online">онлайн</string>
+    <string name="status_away">отошёл</string>
+    <string name="message_placeholder">Сообщение…</string>
+    <string name="empty_chat_message">Начните разговор!</string>
+    <string name="auth_request">🔑 Запрос авторизации</string>
+    <string name="date_today">Сегодня</string>
+    <string name="date_yesterday">Вчера</string>
+
+    <string name="chats_title">Чаты</string>
+    <string name="unread_mail_count">✉ %1$d новых писем</string>
+    <string name="logout">Выход</string>
+    <string name="search_placeholder">Поиск контактов…</string>
+    <string name="new_chat">Новый чат</string>
+    <string name="loading_contacts">Загрузка списка…</string>
+    <string name="no_contacts_found">Ничего не найдено</string>
+    <string name="section_new">Новые</string>
+    <string name="section_online">В сети</string>
+    <string name="section_offline">Оффлайн</string>
+    <string name="last_msg_prefix">Вы: %1$s</string>
+    <string name="contact_email_label">Email контакта</string>
+    <string name="add_button">Добавить</string>
+    <string name="cancel_button">Отмена</string>
+    <string name="status_online_menu">Онлайн</string>
+    <string name="status_away_menu">Отошёл</string>
+    <string name="status_dnd_menu">Не беспокоить</string>
+    <string name="status_invisible_menu">Невидимка</string>
+
+    <string name="notif_channel_messages">Messages</string>
+    <string name="notif_channel_messages_desc">New messages notifications</string>
+
+    <string name="error_fill_login_password">Заполните логин и пароль</string>
+    <string name="error_invalid_port">Некорректный порт (1-65535)</string>
+    <string name="error_empty_host">Укажите адрес сервера</string>
+
+    <string name="login_rej_invalid">Неверный логин или пароль</string>
+    <string name="login_rej_db_error">Внутренняя ошибка сервера</string>
+    <string name="login_rej_access_denied">Доступ запрещён</string>
+    <string name="login_rej_blacklisted_ip">IP-адрес заблокирован</string>
+    <string name="login_rej_unknown">Неизвестная ошибка</string>
+
+    <string name="logout_forced">Принудительный выход</string>
+    <string name="logout_other_login">Вход с другого устройства</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_auto_connect">Автоподключение</string>
+    <string name="settings_auto_connect_desc">Автоматически входить в сеть при запуске приложения</string>
+    <string name="settings_dark_mode">Темная тема</string>
+    <string name="settings_theme_system">Системная</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Темная</string>
+    <string name="settings_appearance">Внешний вид</string>
+    <string name="settings_account">Аккаунт</string>
 </resources>

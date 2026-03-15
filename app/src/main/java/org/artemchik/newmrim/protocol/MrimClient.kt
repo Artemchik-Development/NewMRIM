@@ -1,12 +1,14 @@
 package org.artemchik.newmrim.protocol
 
+import android.content.Context
 import android.util.Log
+import org.artemchik.newmrim.R
 import org.artemchik.newmrim.protocol.data.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.concurrent.atomic.AtomicInteger
 
-class MrimClient {
+class MrimClient(private val context: Context) {
     companion object {
         private const val TAG = "MrimClient"
         private const val CLIENT_ID = "android-mrim"
@@ -126,8 +128,15 @@ class MrimClient {
         when (packet.msgType) {
             MrimConstants.MRIM_CS_HELLO_ACK -> handleHelloAck(packet)
             MrimConstants.MRIM_CS_LOGIN_ACK -> { Log.d(TAG, "LOGIN_ACK"); _state.value = ConnectionState.LoggedIn }
-            MrimConstants.MRIM_CS_LOGIN_REJ -> { val r = if (packet.data.isNotEmpty()) MrimPacketReader(packet.data).readLPSAscii() else "Unknown"; _state.value = ConnectionState.Error(LoginRejectReason.fromServerText(r).displayText) }
-            MrimConstants.MRIM_CS_LOGOUT -> { var reason = "Принудительный выход"; if (packet.data.size >= 4 && MrimPacketReader(packet.data).readUL() == MrimConstants.LOGOUT_OTHER_LOGIN) reason = "Вход с другого устройства"; _state.value = ConnectionState.Error(reason); connection.disconnect() }
+            MrimConstants.MRIM_CS_LOGIN_REJ -> { val r = if (packet.data.isNotEmpty()) MrimPacketReader(packet.data).readLPSAscii() else "Unknown"; _state.value = ConnectionState.Error(context.getString(LoginRejectReason.fromServerText(r).displayResId)) }
+            MrimConstants.MRIM_CS_LOGOUT -> {
+                var reason = context.getString(R.string.logout_forced)
+                if (packet.data.size >= 4 && MrimPacketReader(packet.data).readUL() == MrimConstants.LOGOUT_OTHER_LOGIN) {
+                    reason = context.getString(R.string.logout_other_login)
+                }
+                _state.value = ConnectionState.Error(reason)
+                connection.disconnect()
+            }
             MrimConstants.MRIM_CS_USER_INFO -> handleUserInfo(packet)
             MrimConstants.MRIM_CS_CONTACT_LIST2 -> handleContactList2(packet)
             MrimConstants.MRIM_CS_USER_STATUS -> handleUserStatus(packet)

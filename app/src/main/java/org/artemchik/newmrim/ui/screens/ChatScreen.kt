@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import org.artemchik.newmrim.R
 import org.artemchik.newmrim.protocol.MrimConstants
 import org.artemchik.newmrim.protocol.data.MessageInfo
 import org.artemchik.newmrim.ui.theme.*
@@ -75,13 +77,13 @@ fun ChatScreen(onBack: () -> Unit, viewModel: ChatViewModel = hiltViewModel()) {
                         Column {
                             Text(uiState.contactName, fontWeight = FontWeight.SemiBold, maxLines = 1)
                             when {
-                                uiState.isTyping -> Text("печатает...",
+                                uiState.isTyping -> Text(stringResource(R.string.typing),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary)
                                 uiState.contactStatus == MrimConstants.STATUS_ONLINE ->
-                                    Text("онлайн", style = MaterialTheme.typography.labelSmall, color = OnlineGreen)
+                                    Text(stringResource(R.string.status_online), style = MaterialTheme.typography.labelSmall, color = OnlineGreen)
                                 uiState.contactStatus == MrimConstants.STATUS_AWAY ->
-                                    Text("отошёл", style = MaterialTheme.typography.labelSmall, color = AwayOrange)
+                                    Text(stringResource(R.string.status_away), style = MaterialTheme.typography.labelSmall, color = AwayOrange)
                                 else -> Text(uiState.contactEmail,
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -107,7 +109,7 @@ fun ChatScreen(onBack: () -> Unit, viewModel: ChatViewModel = hiltViewModel()) {
                     OutlinedTextField(
                         value = uiState.inputText,
                         onValueChange = viewModel::onInputChanged,
-                        placeholder = { Text("Сообщение...") },
+                        placeholder = { Text(stringResource(R.string.message_placeholder)) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(24.dp),
                         maxLines = 5
@@ -137,7 +139,7 @@ fun ChatScreen(onBack: () -> Unit, viewModel: ChatViewModel = hiltViewModel()) {
                     Icon(Icons.Outlined.ChatBubbleOutline, null,
                         Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
-                    Text("Начните разговор!",
+                    Text(stringResource(R.string.empty_chat_message),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -204,7 +206,7 @@ private fun MessageBubble(message: MessageInfo) {
         horizontalAlignment = if (isOut) Alignment.End else Alignment.Start
     ) {
         if (message.isAuthRequest) {
-            Text("🔑 Запрос авторизации",
+            Text(stringResource(R.string.auth_request),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
@@ -257,6 +259,7 @@ private fun MessageBubble(message: MessageInfo) {
 private fun formatTime(ts: Long): String =
     SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(ts))
 
+@Composable
 private fun formatDate(ts: Long): String {
     val cal = Calendar.getInstance().apply { timeInMillis = ts }
     val today = Calendar.getInstance()
@@ -264,10 +267,10 @@ private fun formatDate(ts: Long): String {
 
     return when {
         cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-        cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) -> "Сегодня"
+        cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) -> stringResource(R.string.date_today)
 
         cal.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) &&
-        cal.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR) -> "Вчера"
+        cal.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR) -> stringResource(R.string.date_yesterday)
 
         else -> SimpleDateFormat("d MMMM yyyy", Locale("ru")).format(Date(ts))
     }

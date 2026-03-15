@@ -17,6 +17,7 @@ data class ContactListUiState(
     val contacts: List<ContactInfo> = emptyList(),
     val searchQuery: String = "",
     val isConnected: Boolean = false,
+    val currentStatus: UserStatus = UserStatus.OFFLINE,
     val nickname: String = "",
     val unreadMail: Int = 0,
     val unreadCounts: Map<String, Int> = emptyMap(),
@@ -40,14 +41,17 @@ class ContactListViewModel @Inject constructor(
             }
         }
 
-        // Состояние подключения
+        // Состояние подключения и статус
         viewModelScope.launch {
             mrimClient.connectionState.collect { cs ->
-                _uiState.update { it.copy(isConnected = cs is MrimClient.ConnectionState.LoggedIn) }
+                _uiState.update { it.copy(
+                    isConnected = cs is MrimClient.ConnectionState.LoggedIn,
+                    // Если залогинены, то берем статус из клиента (в будущем можно расширить)
+                ) }
             }
         }
 
-        // Информация о пользователе
+        // Информация о пользователе (включая статус)
         viewModelScope.launch {
             mrimClient.userInfo.collect { info ->
                 _uiState.update {
@@ -106,7 +110,10 @@ class ContactListViewModel @Inject constructor(
     }
 
     fun changeStatus(status: UserStatus) {
-        viewModelScope.launch { mrimClient.changeStatus(status) }
+        viewModelScope.launch { 
+            mrimClient.changeStatus(status)
+            _uiState.update { it.copy(currentStatus = status) }
+        }
     }
 
     fun logout() = mrimClient.disconnect()
