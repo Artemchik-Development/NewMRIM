@@ -51,6 +51,9 @@ class MrimClient(private val context: Context) {
     private val _messageDeliveryStatus = MutableSharedFlow<Pair<UInt, UInt>>(extraBufferCapacity = 16)
     val messageDeliveryStatus: SharedFlow<Pair<UInt, UInt>> = _messageDeliveryStatus
 
+    private val _anketaResults = MutableSharedFlow<AnketaInfo>(extraBufferCapacity = 8)
+    val anketaResults: SharedFlow<AnketaInfo> = _anketaResults
+
     init {
         scope.launch {
             connection.incomingPackets.collect { try { handlePacket(it) } catch (e: Exception) { Log.e(TAG, "Handle error", e) } }
@@ -99,7 +102,17 @@ class MrimClient(private val context: Context) {
         return seq
     }
 
-    fun getAvatarUrl(email: String, small: Boolean = false): String = _serverConfig.buildAvatarUrl(email, small)
+    suspend fun searchAnketa(criteria: Map<UInt, String>): UInt {
+        val seq = nextSeq()
+        val writer = MrimPacketWriter()
+        criteria.forEach { (key, value) ->
+            writer.writeUL(key).writeLPS(value)
+        }
+        connection.sendPacket(MrimPacket(seq = seq, msgType = MrimConstants.MRIM_CS_ANKETA_SEARCH, data = writer.toByteArray()))
+        return seq
+    }
+
+    fun getAvatarUrl(email: String, small: Boolean = false, large: Boolean = false): String = _serverConfig.buildAvatarUrl(email, small, large)
     fun disconnect() { pingJob?.cancel(); connection.disconnect(); _state.value = ConnectionState.Disconnected }
     fun destroy() { disconnect(); scope.cancel() }
 
@@ -145,6 +158,7 @@ class MrimClient(private val context: Context) {
             MrimConstants.MRIM_CS_AUTHORIZE_ACK -> { val e = MrimPacketReader(packet.data).readLPSAscii(); _contacts.value = _contacts.value.map { if (it.email == e) it.copy(authorized = true) else it } }
             MrimConstants.MRIM_CS_ADD_CONTACT_ACK -> { val r = MrimPacketReader(packet.data); Log.d(TAG, "ADD_ACK: err=0x${r.readUL().toString(16)} idx=${r.readUL()}") }
             MrimConstants.MRIM_CS_MODIFY_CONTACT_ACK -> Log.d(TAG, "MODIFY_ACK: 0x${MrimPacketReader(packet.data).readUL().toString(16)}")
+            MrimConstants.MRIM_CS_ANKETA_INFO -> handleAnketaInfo(packet)
             else -> Log.w(TAG, "Unhandled: 0x${packet.msgType.toString(16)}")
         }
     }
@@ -158,6 +172,35 @@ class MrimClient(private val context: Context) {
         val r = MrimPacketReader(packet.data); val info = mutableMapOf<String, String>()
         while (r.hasRemaining() && r.remaining >= 4) { try { val k = r.readLPSAscii(); val v = r.readLPS(); if (k.isNotEmpty()) info[k] = v } catch (_: Exception) { break } }
         _userInfo.value = info; Log.d(TAG, "USER_INFO: $info")
+    }
+
+    private suspend fun handleAnketaInfo(packet: MrimPacket) {
+        if (packet.data.size < 16) return
+        val r = MrimPacketReader(packet.data)
+        val errorCode = r.readUL()
+        val fieldsCount = r.readUL().toInt()
+        val maxRows = r.readUL()
+        val serverTime = r.readUL()
+
+        val headers = mutableListOf<String>()
+        for (i in 0 until fieldsCount) {
+            headers.add(r.readLPSAscii())
+        }
+
+        val users = mutableListOf<Map<String, String>>()
+        while (r.hasRemaining() && r.remaining >= 4) {
+            val userMap = mutableMapOf<String, String>()
+            var hasData = false
+            for (header in headers) {
+                if (r.hasRemaining()) {
+                    userMap[header] = r.readLPS()
+                    hasData = true
+                }
+            }
+            if (hasData) users.add(userMap)
+        }
+
+        _anketaResults.emit(AnketaInfo(packet.seq, errorCode, serverTime, users))
     }
 
     private fun handleContactList2(packet: MrimPacket) {

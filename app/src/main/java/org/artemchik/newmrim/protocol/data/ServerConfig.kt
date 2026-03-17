@@ -14,12 +14,16 @@ data class ServerConfig(
         const val FALLBACK_AVATAR_HOST = "obraz.mrim.su"
     }
 
-    fun buildAvatarUrl(email: String, small: Boolean = false): String {
+    fun buildAvatarUrl(email: String, small: Boolean = false, large: Boolean = false): String {
         if (email.isEmpty() || !email.contains("@")) return ""
         val parts = email.split("@")
         val login = parts[0]
         val domain = parts[1].substringBeforeLast(".")
-        val type = if (small) "_mrimavatarsmall" else "_mrimavatar"
+        val type = when {
+            large -> "_mrimavatar180"
+            small -> "_mrimavatar180"
+            else -> "_mrimavatar180"
+        }
         return "http://$avatarHost/$domain/$login/$type"
     }
 }

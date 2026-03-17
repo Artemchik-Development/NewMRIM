@@ -30,6 +30,8 @@ object MrimConstants {
     const val MRIM_CS_AUTHORIZE          = 0x1020u
     const val MRIM_CS_AUTHORIZE_ACK      = 0x1021u
     const val MRIM_CS_CHANGE_STATUS      = 0x1022u
+    const val MRIM_CS_ANKETA_INFO        = 0x1028u
+    const val MRIM_CS_ANKETA_SEARCH      = 0x1029u
     const val MRIM_CS_CONTACT_LIST2      = 0x1037u
     const val MRIM_CS_LOGIN2             = 0x1038u
     const val MRIM_CS_SSL                = 0x1086u
@@ -85,4 +87,9 @@ object MrimConstants {
 
     const val AVATAR_HOST                = "obraz.foto.mail.ru"
     const val AVATAR_HOST_MIRROR         = "buddyicon.foto.mail.ru"
+
+    const val ANKETA_ERROR_OK            = 0x01u
+    const val ANKETA_ERROR_NO_USER       = 0x00u
+    const val ANKETA_ERROR_DB            = 0x02u
+    const val ANKETA_ERROR_RATELIMIT     = 0x03u
 }

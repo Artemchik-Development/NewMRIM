@@ -77,4 +77,23 @@
     <string name="settings_theme_dark">Темная</string>
     <string name="settings_appearance">Внешний вид</string>
     <string name="settings_account">Аккаунт</string>
+
+    <string name="anketa_title">Профиль</string>
+    <string name="anketa_not_found">Пользователь не найден</string>
+    <string name="anketa_db_error">Ошибка базы данных</string>
+    <string name="anketa_rate_limit">Лимит запросов</string>
+    <string name="close">Закрыть</string>
+
+    <string name="sex_male">Мужской</string>
+    <string name="sex_female">Женский</string>
+
+    <string name="profile_chat">Чат</string>
+    <string name="profile_copy">Скопировать</string>
+    <string name="profile_info_section">Информация</string>
+    <string name="profile_personal_section">Личное</string>
+    <string name="profile_full_name">Полное имя</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_birthday">День рождения</string>
+    <string name="profile_sex">Пол</string>
+    <string name="profile_zodiac">Знак зодиака</string>
 </resources>

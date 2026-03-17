@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import org.artemchik.newmrim.protocol.MrimClient
 import org.artemchik.newmrim.protocol.MrimConstants
+import org.artemchik.newmrim.protocol.data.AnketaInfo
 import org.artemchik.newmrim.protocol.data.MessageInfo
 import org.artemchik.newmrim.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +24,10 @@ data class ChatUiState(
     val messages: List<MessageInfo> = emptyList(),
     val inputText: String = "",
     val isSending: Boolean = false,
-    val isTyping: Boolean = false
+    val isTyping: Boolean = false,
+    val anketa: AnketaInfo? = null,
+    val isAnketaLoading: Boolean = false,
+    val currentAnketaSeq: UInt = 0u
 )
 
 @HiltViewModel
@@ -47,7 +51,7 @@ class ChatViewModel @Inject constructor(
                 contactName = c?.displayName ?: contactEmail,
                 contactStatus = c?.status ?: MrimConstants.STATUS_OFFLINE,
                 contactAuthorized = c?.authorized ?: true,
-                contactAvatarUrl = mrimClient.getAvatarUrl(contactEmail, true)
+                contactAvatarUrl = mrimClient.getAvatarUrl(contactEmail, large = true)
             )
         }
 
@@ -91,6 +95,42 @@ class ChatViewModel @Inject constructor(
                 }
             }
         }
+
+        // Подписка на результаты анкеты
+        viewModelScope.launch {
+            mrimClient.anketaResults.collect { anketa ->
+                if (anketa.seq == _uiState.value.currentAnketaSeq) {
+                    _uiState.update { it.copy(anketa = anketa, isAnketaLoading = false) }
+                }
+            }
+        }
+    }
+
+    fun showAnketa() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAnketaLoading = true, anketa = null) }
+            val (user, domain) = if (contactEmail.contains("@")) {
+                contactEmail.split("@", limit = 2)
+            } else {
+                listOf(contactEmail, "")
+            }
+            val criteria = mutableMapOf<UInt, String>()
+            criteria[0u] = user
+            if (domain.isNotEmpty()) criteria[1u] = domain
+            
+            val seq = mrimClient.searchAnketa(criteria)
+            _uiState.update { it.copy(currentAnketaSeq = seq) }
+            
+            // Таймаут если сервер не ответил
+            delay(10000)
+            if (_uiState.value.isAnketaLoading && _uiState.value.currentAnketaSeq == seq) {
+                _uiState.update { it.copy(isAnketaLoading = false) }
+            }
+        }
+    }
+
+    fun closeAnketa() {
+        _uiState.update { it.copy(anketa = null, isAnketaLoading = false) }
     }
 
     fun onInputChanged(text: String) {
