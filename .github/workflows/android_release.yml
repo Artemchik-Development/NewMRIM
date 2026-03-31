@@ -1,5 +1,8 @@
 name: Build and Publish Android (on /app changes)
 
+permissions:
+  contents: read
+
 on:
   push:
     paths:
@@ -38,6 +41,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Download APK artifact
